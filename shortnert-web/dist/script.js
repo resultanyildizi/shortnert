@@ -45,7 +45,7 @@ buttonEl.addEventListener("click", function (e) {
 });
 
 function sendPostRequest() {
-  let url = "http://shortnert.resultanyildizi.com/api/v1/links";
+  let url = "http://localhost:8000/v1/links";
   let data = {
     url: urlValue,
     key: aliasValue,
