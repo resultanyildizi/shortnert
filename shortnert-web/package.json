@@ -1,0 +1,14 @@
+{
+  "name": "shortnert-web",
+  "version": "1.0.0",
+  "description": "shornert web client",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Nurettin Resul Tanyıldızı (tanyildiziresul@gmail.com)",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
