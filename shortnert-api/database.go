@@ -32,7 +32,7 @@ func (db *DatabaseService) GetLinkByKey(key string) (*LinkDbo, error) {
 			WHERE key = $1 AND deleted_at IS NULL;
 	`
 	var result LinkDbo
-	err := db.dbPool.QueryRow(context.Background(), query, key).Scan(&result.Id, &result.Key, &result.Url)
+	err := db.dbPool.QueryRow(context.Background(), query, key).Scan(&result.Id, &result.Url, &result.Key)
 
 	if err != nil {
 		return nil, err
