@@ -1,6 +1,8 @@
 const express = require("express");
 const app = express();
-const port = 3000;
+
+const address = "localhost";
+const port = 8001;
 
 app.use(express.static(__dirname + "/dist"));
 
@@ -10,24 +12,31 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/dist/index.html");
 });
 
-// any other key after /
-app.get("/:key", (req, res) => {
-  // redirect to the original url
-
-  // get the url from the server
-  let endpoint =
-    "http://shortnert.resultanyildizi.com/api/v1/links/" + req.params.key;
-
-  fetch(endpoint).then((response) => {
-    if (response.ok) {
-      response.json().then((data) => {
-        console.log(data);
-        res.redirect(data.url);
-      });
-    }
-  });
+// just favicon
+app.get("/favicon.ico", (req, res) => {
+  res.sendFile(__dirname + "/dist/favicon.png");
 });
 
-app.listen(port, () => {
+// any other key after /
+app.get("/:key", (req, res) => {
+  let baseurl = "http://sh.resultanyildizi.com/";
+  let endpoint = baseurl + "api/v1/links/" + req.params.key;
+
+  fetch(endpoint)
+    .then((response) => {
+      if (response.ok) {
+        response.json().then((data) => {
+          res.redirect(data.url);
+        });
+      } else {
+        res.redirect("/");
+      }
+    })
+    .catch((error) => {
+      res.redirect("/");
+    });
+});
+
+app.listen(port, address, () => {
   console.log(`Example app listening on port ${port}`);
 });

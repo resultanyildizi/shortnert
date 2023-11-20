@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>URL Shortener</title>
+
+    <!--<link-->
+    <!--rel="stylesheet"-->
+    <!--href="https://cdn.jsdelivr.net/npm/sakura.css/css/sakura.css"-->
+    <!--type="text/css"-->
+    <!--/>-->
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/sakura.css/css/sakura-dark.css"
+      media="screen and (prefers-color-scheme: dark)"
+    />
+
+    <link rel="stylesheet" href="style.css" type="text/css" />
+  </head>
+
+  <body>
+    <div class="container">
+      <header>
+        <h1>URL Shortener</h1>
+        <p>Shorten your URLs with ease!</p>
+      </header>
+
+      <form id="shorten-url-form">
+        <div class="input-group">
+          <label for="url">Enter URL:</label>
+          <input
+            type="url"
+            id="url"
+            name="url"
+            required
+            placeholder="https://example.com"
+          />
+        </div>
+
+        <div class="input-group">
+          <label for="alias">Your alias:</label>
+          <input type="text" id="alias" name="alias" />
+        </div>
+
+        <button type="submit" id="button">Shorten URL</button>
+      </form>
+
+      <small id="error"></small>
+      <small id="success"></small>
+      <small id="preview"></small>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
