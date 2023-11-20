@@ -1,8 +1,11 @@
 const express = require("express");
 const app = express();
+const dotenv = require("dotenv");
 
 const address = "localhost";
 const port = 8001;
+
+dotenv.config();
 
 app.use(express.static(__dirname + "/dist"));
 
@@ -19,8 +22,8 @@ app.get("/favicon.ico", (req, res) => {
 
 // any other key after /
 app.get("/:key", (req, res) => {
-  let baseurl = "http://sh.resultanyildizi.com/";
-  let endpoint = baseurl + "api/v1/links/" + req.params.key;
+  let baseurl = process.env.SHORTNERT_API_URL;
+  let endpoint = baseurl + "v1/links/" + req.params.key;
 
   fetch(endpoint)
     .then((response) => {
