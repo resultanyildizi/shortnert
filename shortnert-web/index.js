@@ -20,10 +20,10 @@ app.get("/favicon.ico", (req, res) => {
   res.sendFile(__dirname + "/dist/favicon.png");
 });
 
-// any other key after /
-app.get("/:key", (req, res) => {
+// any other alias after /
+app.get("/:alias", (req, res) => {
   let baseurl = process.env.SHORTNERT_API_URL;
-  let endpoint = baseurl + "v1/links/" + req.params.key;
+  let endpoint = baseurl + "/v1/links/" + req.params.alias;
 
   fetch(endpoint)
     .then((response) => {

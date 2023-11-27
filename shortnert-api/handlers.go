@@ -8,19 +8,26 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgconn"
+	"golang.org/x/exp/slices"
 )
 
 var LinkNotFoundError = errors.New("Link not found")
 
-func GetLinkByKey(ctx *gin.Context, dbservice *DatabaseService) {
-	key := ctx.Param("key")
-	result, err := dbservice.GetLinkByKey(key)
+func GetLinkByAlias(ctx *gin.Context, dbservice *DatabaseService) {
+	forbiddenAliases := []string{"add", "remove", "get", "api", "links", "..", "./"}
+	alias := ctx.Param("alias")
+
+	if slices.Contains(forbiddenAliases, alias) {
+		ctx.IndentedJSON(http.StatusForbidden, gin.H{"error": "Alias is forbidden"})
+		return
+	}
+	result, err := dbservice.GetLinkByAlias(alias)
 
 	if err != nil {
 		ctx.IndentedJSON(http.StatusNotFound, gin.H{"error": "Link not found"})
 	}
 
-	linkRes := LinkRes{Id: result.Id, Key: result.Key, Url: result.Url}
+	linkRes := LinkRes{Id: result.Id, Alias: result.Alias, Url: result.Url}
 
 	ctx.IndentedJSON(http.StatusOK, linkRes)
 }
@@ -56,9 +63,9 @@ func AddLink(ctx *gin.Context, dbservice *DatabaseService) {
 		return
 	}
 
-	fmt.Println(linkReq.Key)
+	fmt.Println(linkReq.Alias)
 
-	result, err := dbservice.AddLink(linkReq.Key, linkReq.Url)
+	result, err := dbservice.AddLink(linkReq.Alias, linkReq.Url)
 
 	if err != nil {
 		var pgErr *pgconn.PgError
@@ -66,7 +73,7 @@ func AddLink(ctx *gin.Context, dbservice *DatabaseService) {
 			fmt.Println(pgErr.Code) // => 42601
 
 			if pgErr.Code == "23505" {
-				ctx.IndentedJSON(http.StatusConflict, gin.H{"error": "Key already exists"})
+				ctx.IndentedJSON(http.StatusConflict, gin.H{"error": "Alias already exists"})
 				return
 			} else if pgErr.Code == "23514" {
 				ctx.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Request body is not valid"})
@@ -77,7 +84,7 @@ func AddLink(ctx *gin.Context, dbservice *DatabaseService) {
 		return
 	}
 
-	linkRes := LinkRes{Id: result.Id, Key: result.Key, Url: result.Url}
+	linkRes := LinkRes{Id: result.Id, Alias: result.Alias, Url: result.Url}
 
 	// Respond with a success message
 	ctx.IndentedJSON(http.StatusCreated, linkRes)

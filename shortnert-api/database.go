@@ -25,14 +25,14 @@ func (db *DatabaseService) Close() {
 	db.dbPool.Close()
 }
 
-func (db *DatabaseService) GetLinkByKey(key string) (*LinkDbo, error) {
+func (db *DatabaseService) GetLinkByAlias(alias string) (*LinkDbo, error) {
 	query := `
-		SELECT id, url, key
+		SELECT id, url, alias
 			FROM public.links
-			WHERE key = $1 AND deleted_at IS NULL;
+			WHERE alias = $1 AND deleted_at IS NULL;
 	`
 	var result LinkDbo
-	err := db.dbPool.QueryRow(context.Background(), query, key).Scan(&result.Id, &result.Url, &result.Key)
+	err := db.dbPool.QueryRow(context.Background(), query, alias).Scan(&result.Id, &result.Url, &result.Alias)
 
 	if err != nil {
 		return nil, err
@@ -40,14 +40,14 @@ func (db *DatabaseService) GetLinkByKey(key string) (*LinkDbo, error) {
 	return &result, nil
 }
 
-func (db *DatabaseService) AddLink(key string, url string) (*LinkDbo, error) {
+func (db *DatabaseService) AddLink(alias string, url string) (*LinkDbo, error) {
 	query := `
-		INSERT INTO public.links(key, url)
+		INSERT INTO public.links(alias, url)
 			VALUES ($1, $2)
-			RETURNING id, key, url;
+			RETURNING id, alias, url;
 	`
 	var result LinkDbo
-	err := db.dbPool.QueryRow(context.Background(), query, key, url).Scan(&result.Id, &result.Key, &result.Url)
+	err := db.dbPool.QueryRow(context.Background(), query, alias, url).Scan(&result.Id, &result.Alias, &result.Url)
 
 	if err != nil {
 		return nil, err

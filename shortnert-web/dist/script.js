@@ -45,13 +45,16 @@ buttonEl.addEventListener("click", function (e) {
 });
 
 function sendPostRequest() {
-  let url = "http://localhost:8000/v1/links";
+  //let baseUrl = "http://localhost:8000";
+  let baseUrl = "http://sh.resultanyildizi.com/api";
+
+  let endpoint = `${baseUrl}/v1/links`;
   let data = {
     url: urlValue,
-    key: aliasValue,
+    alias: aliasValue,
   };
 
-  fetch(url, {
+  fetch(endpoint, {
     method: "POST",
     body: JSON.stringify(data),
   }).then((response) => {
