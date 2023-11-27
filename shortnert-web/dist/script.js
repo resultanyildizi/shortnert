@@ -1,6 +1,8 @@
 let conflictErrorText = "Alias already exists";
-let otherErrorText = "There was an error shortening your URL. Please try again.";
-let successText = "You can copy your shortened URL and paste it on your browser.";
+let otherErrorText =
+  "There was an error shortening your URL. Please try again.";
+let successText =
+  "You can copy your shortened URL and paste it on your browser.";
 
 let urlEl = document.getElementById("url");
 let aliasEl = document.getElementById("alias");
@@ -9,7 +11,7 @@ let buttonEl = document.getElementById("button");
 let successEl = document.getElementById("success");
 let errorEl = document.getElementById("error");
 
-let previewBase = document.location.origin + "/"; 
+let previewBase = document.location.origin + "/";
 
 var aliasValue = "";
 var urlValue = "";
@@ -54,30 +56,31 @@ function sendPostRequest() {
     alias: aliasValue,
   };
 
-  fetch(endpoint, {
-    method: "POST",
-    body: JSON.stringify(data),
-  }).then((response) => {
-    if (response.ok) {
-      response.json().then((data) => {
+  var xmlHttp = new XMLHttpRequest();
+  xmlHttp.onreadystatechange = function () {
+    if (xmlHttp.readyState == 4) {
+      if (xmlHttp.status == 201) {
         aliasValue = generateRandomAlias();
         aliasEl.value = aliasValue;
         urlValue = "";
         urlEl.value = urlValue;
         successEl.style.display = "block";
         errorEl.style.display = "none";
-      });
-      successEl.innerHTML = successText;
-    } else {
-      if(response.status == 409) {
+        successEl.innerHTML = successText;
+      } else if (xmlHttp.status == 409) {
         errorEl.innerHTML = conflictErrorText;
+        successEl.style.display = "none";
+        errorEl.style.display = "block";
       } else {
         errorEl.innerHTML = otherErrorText;
+        successEl.style.display = "none";
+        errorEl.style.display = "block";
       }
-      successEl.style.display = "none";
-      errorEl.style.display = "block";
     }
-  });
+  };
+  xmlHttp.open("POST", endpoint, true);
+  xmlHttp.setRequestHeader("Content-Type", "application/json");
+  xmlHttp.send(JSON.stringify(data));
 }
 
 function isValidAlias(alias) {
