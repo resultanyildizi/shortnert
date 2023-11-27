@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const dotenv = require("dotenv");
+const fetch = require("node-fetch");
 
 const address = "localhost";
 const port = 8001;
