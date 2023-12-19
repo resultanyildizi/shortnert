@@ -8,6 +8,7 @@ const port = 8001;
 
 dotenv.config();
 
+app.use(express.json());
 app.use(express.static(__dirname + "/dist"));
 
 // dist/index.html
@@ -20,6 +21,8 @@ app.get("/", (req, res) => {
 app.get("/favicon.ico", (req, res) => {
   res.sendFile(__dirname + "/dist/favicon.png");
 });
+
+
 
 // any other alias after /
 app.get("/:alias", (req, res) => {
@@ -38,6 +41,59 @@ app.get("/:alias", (req, res) => {
     })
     .catch((error) => {
       res.redirect("/");
+    });
+});
+
+
+// middleware functions
+
+// send get request to /v1/links
+app.post("/__middleWare__sendGetLatestLinksRequest", (req, res) => {
+  let baseUrl = process.env.SHORTNERT_API_URL;
+  let endpoint = `${baseUrl}/v1/links`;
+
+  fetch(endpoint, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+    .then((response) => {
+      response.json().then((data) => {
+        res.json(data);
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    });
+});
+
+// send shorten request
+app.post("/__middleWare__sendShortenRequest", (req, res) => {
+  let baseUrl = process.env.SHORTNERT_API_URL;
+  let endpoint = `${baseUrl}/v1/links`;
+
+  let data = {
+    url: req.body.url,
+    alias: req.body.alias,
+  };
+
+  fetch(endpoint, {
+    method: "POST",
+    body: JSON.stringify(data),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+    .then((response) => {
+      response.json().then((data) => {
+        res.json(data);
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(500).json({ error: "Internal Server Error" });
     });
 });
 

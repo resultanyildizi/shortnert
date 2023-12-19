@@ -13,22 +13,42 @@ import (
 
 var LinkNotFoundError = errors.New("Link not found")
 
+func GetLatestLinks(ctx *gin.Context, dbservice *DatabaseService) {
+	linkDbos, err := dbservice.GetLatestLinks()
+
+	if err != nil {
+		fmt.Println(err)
+		ctx.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+
+	linkRes := make([]LinkRes, len(linkDbos))
+
+	for i, linkDbo := range linkDbos {
+		linkRes[i] = LinkResFromLinkDbo(&linkDbo)
+	}
+
+	ctx.IndentedJSON(http.StatusOK, linkRes)
+}
+
 func GetLinkByAlias(ctx *gin.Context, dbservice *DatabaseService) {
 	forbiddenAliases := []string{"add", "remove", "get", "api", "links", "..", "./"}
 	alias := ctx.Param("alias")
+
+	fmt.Println(alias)
 
 	if slices.Contains(forbiddenAliases, alias) {
 		ctx.IndentedJSON(http.StatusForbidden, gin.H{"error": "Alias is forbidden"})
 		return
 	}
-	result, err := dbservice.GetLinkByAlias(alias)
+	linkDbo, err := dbservice.GetLinkByAlias(alias)
+
+	fmt.Println(linkDbo)
 
 	if err != nil {
 		ctx.IndentedJSON(http.StatusNotFound, gin.H{"error": "Link not found"})
 	}
 
-	linkRes := LinkRes{Id: result.Id, Alias: result.Alias, Url: result.Url}
-
+	linkRes := LinkResFromLinkDbo(linkDbo)
 	ctx.IndentedJSON(http.StatusOK, linkRes)
 }
 
@@ -65,7 +85,7 @@ func AddLink(ctx *gin.Context, dbservice *DatabaseService) {
 
 	fmt.Println(linkReq.Alias)
 
-	result, err := dbservice.AddLink(linkReq.Alias, linkReq.Url)
+	linkDbo, err := dbservice.AddLink(linkReq.Alias, linkReq.Url)
 
 	if err != nil {
 		var pgErr *pgconn.PgError
@@ -84,7 +104,7 @@ func AddLink(ctx *gin.Context, dbservice *DatabaseService) {
 		return
 	}
 
-	linkRes := LinkRes{Id: result.Id, Alias: result.Alias, Url: result.Url}
+	linkRes := LinkResFromLinkDbo(linkDbo)
 
 	// Respond with a success message
 	ctx.IndentedJSON(http.StatusCreated, linkRes)

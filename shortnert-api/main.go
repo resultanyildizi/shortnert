@@ -24,6 +24,7 @@ func main() {
 	basePath := "/v1"
 
 	router.GET(basePath+"/links/:alias", func(ctx *gin.Context) { GetLinkByAlias(ctx, dbservice) })
+	router.GET(basePath+"/links", func(ctx *gin.Context) { GetLatestLinks(ctx, dbservice) })
 	router.POST(basePath+"/links", func(ctx *gin.Context) { AddLink(ctx, dbservice) })
 	router.DELETE(basePath+"/links/:id", func(ctx *gin.Context) { RemoveLinkById(ctx, dbservice) })
 	router.Run(os.Getenv("API_URL"))

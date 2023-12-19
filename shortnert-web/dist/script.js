@@ -22,6 +22,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
   aliasValue = generateRandomAlias();
   aliasEl.value = aliasValue;
   previewEl.innerHTML = previewBase + aliasValue;
+
+  sendGetLatestLinksRequest();
 });
 
 urlEl.addEventListener("input", function (e) {
@@ -46,11 +48,46 @@ buttonEl.addEventListener("click", function (e) {
   sendPostRequest();
 });
 
-function sendPostRequest() {
-  //let baseUrl = "http://localhost:8000";
-  let baseUrl = "http://sh.resultanyildizi.com/api";
+let baseUrl = "http://localhost:8001";
 
-  let endpoint = `${baseUrl}/v1/links`;
+function sendGetLatestLinksRequest() {
+  let endpoint = `${baseUrl}/__middleWare__sendGetLatestLinksRequest`;
+
+  var xmlHttp = new XMLHttpRequest();
+  xmlHttp.onreadystatechange = function () {
+    if (xmlHttp.readyState == 4) {
+      if (xmlHttp.status == 200) {
+        let links = JSON.parse(xmlHttp.responseText);
+
+        let tableBody = document.getElementById("urls");
+        
+        // Clear table
+        tableBody.innerHTML = "";
+
+        for (let i = 0; i < links.length; i++) {
+          let link = links[i];
+
+          let row = document.createElement("tr");
+
+          let url = document.createElement("td");
+          url.innerHTML = `<a class='link' href="${link.url}">${link.alias}</a>`;
+
+          row.appendChild(url);
+
+          tableBody.appendChild(row);
+        }
+      } else {
+        console.log("Error");
+      }
+    }
+  };
+  xmlHttp.open("POST", endpoint, true);
+  xmlHttp.setRequestHeader("Content-Type", "application/json");
+  xmlHttp.send();
+}
+
+function sendPostRequest() {
+  let endpoint = `${baseUrl}/__middleWare__sendShortenRequest`;
   let data = {
     url: urlValue,
     alias: aliasValue,
@@ -59,7 +96,7 @@ function sendPostRequest() {
   var xmlHttp = new XMLHttpRequest();
   xmlHttp.onreadystatechange = function () {
     if (xmlHttp.readyState == 4) {
-      if (xmlHttp.status == 201) {
+      if (xmlHttp.status == 200 || xmlHttp.status == 201) {
         aliasValue = generateRandomAlias();
         aliasEl.value = aliasValue;
         urlValue = "";
@@ -67,6 +104,7 @@ function sendPostRequest() {
         successEl.style.display = "block";
         errorEl.style.display = "none";
         successEl.innerHTML = successText;
+        sendGetLatestLinksRequest();
       } else if (xmlHttp.status == 409) {
         errorEl.innerHTML = conflictErrorText;
         successEl.style.display = "none";

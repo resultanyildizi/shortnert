@@ -27,33 +27,33 @@ func (db *DatabaseService) Close() {
 
 func (db *DatabaseService) GetLinkByAlias(alias string) (*LinkDbo, error) {
 	query := `
-		SELECT id, url, alias
+		SELECT id, url, alias, created_at
 			FROM public.links
 			WHERE alias = $1 AND deleted_at IS NULL;
 	`
-	var result LinkDbo
-	err := db.dbPool.QueryRow(context.Background(), query, alias).Scan(&result.Id, &result.Url, &result.Alias)
+	var link LinkDbo
+	err := db.dbPool.QueryRow(context.Background(), query, alias).Scan(&link.Id, &link.Url, &link.Alias, &link.CreatedAt)
 
 	if err != nil {
 		return nil, err
 	}
-	return &result, nil
+	return &link, nil
 }
 
 func (db *DatabaseService) AddLink(alias string, url string) (*LinkDbo, error) {
 	query := `
-		INSERT INTO public.links(alias, url)
-			VALUES ($1, $2)
-			RETURNING id, alias, url;
+		INSERT INTO public.links(alias, url, created_at)
+			VALUES ($1, $2, NOW())
+			RETURNING id, alias, url, created_at;
 	`
-	var result LinkDbo
-	err := db.dbPool.QueryRow(context.Background(), query, alias, url).Scan(&result.Id, &result.Alias, &result.Url)
+	var link LinkDbo
+	err := db.dbPool.QueryRow(context.Background(), query, alias, url).Scan(&link.Id, &link.Alias, &link.Url, &link.CreatedAt)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &result, nil
+	return &link, nil
 }
 
 func (db *DatabaseService) RemoveLinkById(id int) error {
@@ -70,4 +70,36 @@ func (db *DatabaseService) RemoveLinkById(id int) error {
 	}
 
 	return err
+}
+
+func (db *DatabaseService) GetLatestLinks() ([]LinkDbo, error) {
+	query := `
+		SELECT id, url, alias, created_at
+			FROM public.links
+			WHERE deleted_at IS NULL
+			ORDER BY created_at DESC;
+	`
+	// TODO(resultanyildizi): Add pagination
+	rows, err := db.dbPool.Query(context.Background(), query)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var result []LinkDbo
+
+	for rows.Next() {
+		var link LinkDbo
+		err := rows.Scan(&link.Id, &link.Url, &link.Alias, &link.CreatedAt)
+
+		if err != nil {
+			return nil, err
+		}
+
+		result = append(result, link)
+	}
+
+	return result, nil
 }
